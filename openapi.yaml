@@ -1,0 +1,319 @@
+openapi: 3.0.0
+info:
+  title: Yahtzee
+  description: |
+    Provides a REST API for representing the state of a player and five dice. The player is represented by their name (a string). 
+    Each die is represented by an ID number (integer between 1-5) and a value (integer between 1-6). The data from this API will
+    be used to populate a user interface, so we must ensure the values will display nicely. By default, the application listens
+    on port 8080, but this can be overridden with the "-port" argument. The username is "admin", and the password is "snakeeyes".
+    Be sure you read through the entire API before you begin writing test cases - you may find some endpoints are useful for
+    testing other endpoints. Note the GET /die/{id} endpoint supports multiple representations for the value of the die.
+  version: 0.0.1
+
+paths:
+  /playerName:
+    get:
+      summary: Get the name of the player
+      description: Get the name of the player
+      responses:
+        '200':
+          description: The name of the player
+          content:
+            'application/json':
+              required: true
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: success
+                data: foo
+    put:
+      summary: Set the name of the player
+      description: "*Requires authentication* Sets the name of the player. Returns no content on success."
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+                $ref: '#/components/schemas/PlayerRequestSchema'
+            example:
+              name: 'foo'
+      responses:
+        '204':
+          description: Name set successfully
+        '400':
+          description: Bad request
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+        '401':
+          description: Unauthorized
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+  /die/{id}:
+    get:
+      summary: Get an individual die
+      description: |
+        Supports multiple representations for the value of a die: integer (4), float ("4.0"), word ("four"), and dots ("....")
+      parameters:
+      - name: id
+        in: path
+        description: ID number of the die
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Individual die
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/DieIntResponseSchema'
+              example: 
+                status: success
+                data:
+                  id: 1
+                  value: 4
+            'application/vnd.yahtzee.int+json':
+              schema:
+                $ref: '#/components/schemas/DieIntResponseSchema'
+              example: 
+                status: success
+                data:
+                  id: 1
+                  value: 4
+            'application/vnd.yahtzee.float+json':
+              schema:
+                $ref: '#/components/schemas/DieStringResponseSchema'
+              example: 
+                status: success
+                data:
+                  id: 1
+                  value: '4.0'
+            'application/vnd.yahtzee.word+json':
+              schema:
+                $ref: '#/components/schemas/DieStringResponseSchema'
+              example: 
+                status: success
+                data:
+                  id: 1
+                  value: 'four'
+            'application/vnd.yahtzee.dots+json':
+              schema:
+                $ref: '#/components/schemas/DieStringResponseSchema'
+              example: 
+                status: success
+                data:
+                  id: 1
+                  value: '....'
+        '400':
+          description: Bad request
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+  /die:
+    put:
+      summary: Set value of a die
+      description: "*Requires authentication* Sets the value of a die. Returns no content on success."
+      requestBody:
+        required: true
+        content:
+          'application/json':
+            schema:
+                $ref: '#/components/schemas/DieRequestSchema'
+            example:
+              id: 1
+              value: 5
+      responses:
+        '204':
+          description: Die set successfully
+        '400':
+          description: Bad request
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+        '401':
+          description: Unauthorized
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+  /rollDie/{id}:
+    post:
+      summary: Roll an individual die
+      description: Rolls an individual die and returns its new state.
+      parameters:
+      - name: id
+        in: path
+        description: ID number of the die
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Die rolled successfully
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/DieIntResponseSchema'
+              example:
+                status: success
+                data:
+                  id: 1
+                  value: 6
+        '400':
+          description: Bad request
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/StringResponseSchema'
+              example:
+                status: failed
+                data: This is why your request failed
+  /dice:
+    get: 
+      summary: Get the values of all five dice
+      description: Returns an array of all five dice.
+      responses:
+        '200':
+          description: Values of all five dice
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/DieArrayResponseSchema'
+              example:
+                status: success
+                data:
+                - id: 1
+                  value: 6
+                - id: 2
+                  value: 5
+                - id: 3
+                  value: 4
+                - id: 4
+                  value: 3
+                - id: 5
+                  value: 2
+  /rollDice:
+    post:
+      summary: Roll all five dice
+      description: Rolls all five dice and returns their new values. Returns all five dice.
+      responses:
+        '200':
+          description: Dice rolled successfully
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/DieArrayResponseSchema'
+              example:
+                status: success
+                data:
+                - id: 1
+                  value: 6
+                - id: 2
+                  value: 5
+                - id: 3
+                  value: 4
+                - id: 4
+                  value: 3
+                - id: 5
+                  value: 2
+  /isYahtzee:
+    get:
+      summary: Check for Yahtzee
+      description: Checks if dice are in "Yahtzee" state (all five die show the same value). Returns a boolean.
+      responses:
+        '200':
+          description: Check for Yahtzee state
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/BooleanResponseSchema'
+              example:
+                status: success
+                data: true
+components:
+  schemas:
+    StringResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: string
+    BooleanResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: boolean
+    DieIntResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+            value:
+              type: integer
+    DieStringResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: object
+          properties:
+            id:
+              type: integer
+            value:
+              type: string
+    DieArrayResponseSchema:
+      type: object
+      properties:
+        status:
+          type: string
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              value:
+                type: integer
+    DieRequestSchema:
+      type: object
+      properties:
+        id:
+          type: integer
+        value:
+          type: integer
+    PlayerRequestSchema:
+      type: object
+      properties:
+        name:
+          type: string
