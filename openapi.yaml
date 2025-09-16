@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.1.0
 info:
   title: Yahtzee
   description: |
@@ -20,7 +20,6 @@ paths:
           description: The name of the player
           content:
             'application/json':
-              required: true
               schema:
                 $ref: '#/components/schemas/StringResponseSchema'
               example:
@@ -29,6 +28,8 @@ paths:
     put:
       summary: Set the name of the player
       description: "*Requires authentication* Sets the name of the player. Returns no content on success."
+      security:
+        - basicAuth: []
       requestBody:
         required: true
         content:
@@ -127,6 +128,8 @@ paths:
     put:
       summary: Set value of a die
       description: "*Requires authentication* Sets the value of a die. Returns no content on success."
+      security:
+        - basicAuth: []
       requestBody:
         required: true
         content:
@@ -252,9 +255,17 @@ paths:
                 status: success
                 data: true
 components:
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
+      description: Basic HTTP authentication. Username is "admin", password is "snakeeyes".
   schemas:
     StringResponseSchema:
       type: object
+      required:
+        - status
+        - data
       properties:
         status:
           type: string
@@ -262,6 +273,9 @@ components:
           type: string
     BooleanResponseSchema:
       type: object
+      required:
+        - status
+        - data
       properties:
         status:
           type: string
@@ -269,11 +283,17 @@ components:
           type: boolean
     DieIntResponseSchema:
       type: object
+      required:
+        - status
+        - data
       properties:
         status:
           type: string
         data:
           type: object
+          required:
+            - id
+            - value
           properties:
             id:
               type: integer
@@ -281,11 +301,17 @@ components:
               type: integer
     DieStringResponseSchema:
       type: object
+      required:
+        - status
+        - data
       properties:
         status:
           type: string
         data:
           type: object
+          required:
+            - id
+            - value
           properties:
             id:
               type: integer
@@ -293,6 +319,9 @@ components:
               type: string
     DieArrayResponseSchema:
       type: object
+      required:
+        - status
+        - data
       properties:
         status:
           type: string
@@ -300,6 +329,9 @@ components:
           type: array
           items:
             type: object
+            required:
+              - id
+              - value
             properties:
               id:
                 type: integer
@@ -307,6 +339,9 @@ components:
                 type: integer
     DieRequestSchema:
       type: object
+      required:
+        - id
+        - value
       properties:
         id:
           type: integer
@@ -314,6 +349,8 @@ components:
           type: integer
     PlayerRequestSchema:
       type: object
+      required:
+        - name
       properties:
         name:
           type: string
